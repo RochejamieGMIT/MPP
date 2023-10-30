@@ -29,9 +29,7 @@ struct Shop{
 };
 
 void printProduct(struct Product p){
-    printf("-------------\n");
     printf("PRODUCT NAME: %s \nPRODUCT PRICE: %.2f\n", p.name, p.price);
-	printf("-------------\n");
 
 };
 
@@ -61,11 +59,13 @@ struct Shop createAndStockShop(){
     while ((read = getline(&line, &len, fp)) != -1) {
         // printf("Retrieved line of length %zu:\n", read);
         //printf("%s IS A LINE", line);
-		char *name = strtok(line,",");
+		char *n = strtok(line,",");
         char *p = strtok(NULL,",");
         char *q = strtok(NULL,",");
         int quantity = atoi(q);
 		double price = atof(p);
+        char *name = malloc(sizeof(char) * 50);
+        strcpy(name, n);
         struct Product product = {name,price};
         struct ProductStock stockItem = {product,quantity};
         shop.stock[shop.index++] = stockItem;
@@ -76,11 +76,14 @@ struct Shop createAndStockShop(){
 };
 
 void printShop(struct Shop s){
-    printf("Shop has %.2f in cash\n",s.cash);
+    printf("\nShop has %.2f in cash\n",s.cash);
+    printf("-------------\n");
+
     for (int i = 0;i<s.index;i++)
     {
         printProduct(s.stock[i].product);
-        printf("The shop has %d of %s",s.stock->quantity,s.stock->product.name);
+        printf("The shop has %d of %s\n",s.stock[i].quantity,s.stock[i].product.name);
+        printf("-------------\n");
     };
 
 };
@@ -94,7 +97,7 @@ int main(void){
     //printf("Item name %s, item price %.2f\n",coke.name,coke.price);
 
     struct ProductStock cokeStock = {coke,20};
-     struct ProductStock breadStock = {bread,2};
+    struct ProductStock breadStock = {bread,2};
     //printf("Shop has %d of %s",cokeStock.quantity,cokeStock.product.name);
 
     //printf("\n*****************************\n");
