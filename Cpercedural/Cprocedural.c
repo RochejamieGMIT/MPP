@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h> 
 
 struct Product {
     char* name;
@@ -26,6 +27,32 @@ struct Shop{
     int index; 
 };
 
+
+double getCash(){
+    double cash = 0;
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int i = 0;
+    fp = fopen("stock.csv", "r");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
+
+    while (i == 0) {
+        read = getline(&line, &len, fp);
+        // printf("Retrieved line of length %zu:\n", read);
+        //printf("%s IS A LINE", line);
+		char *n = strtok(line,",");
+        char *c = strtok(NULL,",");
+		cash = atof(c);
+        //printf("%.2f CASH IN LOOP",cash);
+        i++;
+        }
+    fclose(fp);
+    return cash;
+};
+
 void printProduct(struct Product p){
     printf("Product Name: %s\nProduct Price: %.2f\n",p.name,p.price);
     printf("_______________________\n");
@@ -46,7 +73,7 @@ void printCustomer(struct Customer c){
 }
 
 struct Shop createAndStockShop(){
-   	struct Shop shop = { 200 };
+   	struct Shop shop = {};
     FILE * fp;
     char * line = NULL;
     size_t len = 0;
@@ -76,7 +103,7 @@ struct Shop createAndStockShop(){
 };
 
 void printShop(struct Shop s){
-    printf("\nShop has %.2f in cash\n",s.cash);
+    //printf("\nShop has %.2f in cash\n",s.cash);
     printf("-------------\n");
     //set to 1 to skip cash for now
     for (int i = 1;i<s.index;i++)
@@ -87,6 +114,49 @@ void printShop(struct Shop s){
     };
 
 };
+
+
+void displayMenu(){
+    printf("Welcome to the C procedural shop \n----------\n");
+    printf("Menu\n====\n");
+    printf("1 - Buy With Shopping List (CSV)\n");
+    printf("2 - Buy Live\n");
+    printf("3 - Check Shop Stock\n");
+    printf("4 - Check Shop Cash Balance\n");
+    printf("x - Exit application\n");
+
+
+}
+
+void existingCustomer(){
+    printf("Are you an existing customer with a shopping list?\n");
+    printf("Type 1 for yes, 2 for no\n");
+    char c;
+    char * token = "3";
+    while(1){
+        scanf(" %c",&c);
+        //https://stackoverflow.com/questions/4204666/how-to-list-files-in-a-directory-in-a-c-program
+        if (c=='1') {
+            DIR *d;
+        struct dirent *dir;
+            d = opendir(".\\Customers");
+        if (d) {
+        while ((dir = readdir(d)) != NULL) {
+            //https://www.educative.io/answers/splitting-a-string-using-strtok-in-c
+        token = strtok(dir->d_name, ".");
+        printf("%s\n",token );
+        }
+            closedir(d);}
+           
+            } else if (c=='2') {
+            printf("Sorry, Shopping with a list is for exisitng customers only\n You will be sent back to the main menu\n");
+            break; // Send back to main menu
+            }else{
+             printf("Invalid Option");
+            }
+    }
+
+}
 
 int main(void)
 {
@@ -100,19 +170,42 @@ int main(void)
 
     struct ProductStock cokeStock = {coke,20};
     struct ProductStock breadStock = {bread,2};
-    printf("The shop has %d of the product %s\n",cokeStock.quantity,cokeStock.product.name);
+    //printf("The shop has %d of the product %s\n",cokeStock.quantity,cokeStock.product.name);
 
     
     
 
     Jamie.shoppingList[Jamie.index++] = cokeStock;
     Jamie.shoppingList[Jamie.index++] = breadStock;
-    printCustomer(Jamie);
+    //printCustomer(Jamie);
     //printProduct(coke);
+    double cash = getCash();
+    printf("CASH IS %.2f\n",cash);
+
+
+
 
     struct Shop shop = createAndStockShop();
     printShop(shop);
     char c;
-    scanf("%c",&c);
+    while(1){
+            displayMenu();
+            scanf("%c",&c);
+            if (c=='1') {
+            existingCustomer();
+            } else if (c=='2') {
+            // block of code to be executed if the condition1 is false and condition2 is true
+            }else if (c=='3') {
+            // block of code to be executed if the condition1 is false and condition2 is true
+            }else if (c=='4') {
+            // block of code to be executed if the condition1 is false and condition2 is true
+            }else if (c=='x') {
+            printf("Closing app"); 
+                break; // breaks loop and closes the program
+            } else {
+            // block of code to be executed if the condition1 is false and condition2 is false
+            }
+    }
+
     return 0;
 }
