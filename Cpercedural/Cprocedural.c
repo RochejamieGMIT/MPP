@@ -59,16 +59,11 @@ void printProduct(struct Product p){
 };
 
 void printCustomer(struct Customer c){
-    printf("Customer name:%s\n",c.name);
-    printf("Customer Budget: %.2f\n",c.budget);
-    printf("_______________________\n");
-    for(int i =0; i<c.index;i++)
-    {
-        printProduct(c.shoppingList[i].product);
-        printf("%s Orders %d of the %s\n",c.name,c.shoppingList[i].quantity,c.shoppingList[i].product.name);
-        double cost = c.shoppingList[i].product.price*c.shoppingList[i].quantity;
-        printf("The cost to %s will be E%.2f\n",c.name,cost);
-    };
+     printf("Name: %s Cash: %.2f\n",c.name,c.budget);
+    printf("ShoppingList for %s\n",c.name);
+   for(int i=0; i < c.index; i++){
+		printf("%s %d\n",c.shoppingList[i].product.name,c.shoppingList[i].quantity);
+	}
 
 }
 
@@ -128,11 +123,82 @@ void displayMenu(){
 
 }
 
+
+struct Customer read_customer(char CustDir[80]){
+    struct Customer c = {};
+    double cash;
+    FILE * fp;
+    char * line = NULL;
+    size_t len = 0;
+    ssize_t read;
+    int i = 0;
+    fp = fopen(CustDir, "r");
+    if (fp == NULL)
+        exit(EXIT_FAILURE);
+
+
+     while (i == 0) {
+        read = getline(&line, &len, fp);
+        // printf("Retrieved line of length %zu:\n", read);
+        //printf("%s IS A LINE", line);
+		char *n = strtok(line,",");
+        char *b = strtok(NULL,",");
+        char *name = malloc(sizeof(char) * 50);
+        strcpy(name, n);
+        //printf("name of cust %s",name);
+        c.name = name;
+		c.budget = atof(b);
+        //printf("%.2f CASH IN LOOP",c.budget);
+        i++;
+        }
+    int index=0;
+    while ((read = getline(&line, &len, fp)) != -1) {
+        // printf("Retrieved line of length %zu:\n", read);
+        //printf("%s IS A LINE", line);
+		char *n = strtok(line,",");
+        //*p = strtok(NULL,",");
+        char *q = strtok(NULL,",");
+        int quantity = atoi(q);
+		double price = 0;
+        char *name = malloc(sizeof(char) * 50);
+        strcpy(name, n);
+        struct Product product = {name,price};
+        struct ProductStock shoppingList = {product,quantity};
+        c.shoppingList[c.index++] = shoppingList;
+        //printf("Name of product %s price %.2f quanity %i\n", name,price,quantity);
+        }
+
+    return c;
+
+
+
+
+}
+
+void buyingCSV(char CustDir[80]){
+    //printf("Bought stuff\n");
+    //printf("%s - passed customer dir",CustDir);
+    struct Customer c = read_customer(CustDir);
+    printCustomer(c);
+    struct Shop shop = createAndStockShop();
+    double cash = getCash();
+    double total = 0;
+    int flag = 0;
+
+
+}
+
 void existingCustomer(){
     printf("Are you an existing customer with a shopping list?\n");
     printf("Type 1 for yes, 2 for no\n");
     char c;
-    char * token = "3";
+    char * token = "";
+    int count=0;
+    char *s = "";
+    char CustDir[80];
+    //https://www.geeksforgeeks.org/array-of-strings-in-c/
+    char name[10][20] = {};
+    char check[20];
     while(1){
         scanf(" %c",&c);
         //https://stackoverflow.com/questions/4204666/how-to-list-files-in-a-directory-in-a-c-program
@@ -141,13 +207,48 @@ void existingCustomer(){
         struct dirent *dir;
             d = opendir(".\\Customers");
         if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            //https://www.educative.io/answers/splitting-a-string-using-strtok-in-c
-        token = strtok(dir->d_name, ".");
-        printf("%s\n",token );
-        }
-            closedir(d);}
-           
+                while ((dir = readdir(d)) != NULL) {
+                    //https://www.educative.io/answers/splitting-a-string-using-strtok-in-c
+                    //https://www.geeksforgeeks.org/different-ways-to-copy-a-string-in-c-c/
+                    token = strtok(dir->d_name, ".");
+                    //printf("%s\n", token); // Print the tokenized part
+                    if (token != NULL) {
+                        //https://www.geeksforgeeks.org/array-of-strings-in-c/
+                        strcpy(name[count], token); // Store token in the array
+                        printf("%s\n", name[count]); // Print the stored token
+                        count++;
+                    }
+                }
+                closedir(d);
+            }
+           int len = sizeof(name)/sizeof(name[0]);
+           int foundFlag =0;
+           scanf("%s",check);
+           //https://stackoverflow.com/questions/13677890/how-to-check-if-a-string-is-in-an-array-of-strings-in-c
+            for(count = 0; count < len; ++count)
+                {
+                    if(!strcmp(name[count], check))
+                    {
+                       strcpy(CustDir, "Customers\\");
+                       strcat(CustDir, check);
+                       strcat(CustDir, ".csv");
+                       //printf("%s", CustDir);
+                        buyingCSV(CustDir);
+                        foundFlag=1;
+                        
+                    }
+                }
+            if (foundFlag == 1)
+            {
+                break;
+            }
+            else{
+                printf("Does not Exist, Try again\n");
+                printf("Are you an existing customer with a shopping list?\n");
+                printf("Type 1 for yes, 2 for no\n");
+
+            }
+
             } else if (c=='2') {
             printf("Sorry, Shopping with a list is for exisitng customers only\n You will be sent back to the main menu\n");
             break; // Send back to main menu
@@ -158,31 +259,32 @@ void existingCustomer(){
 
 }
 
+
+
+
 int main(void)
 {
-    struct Customer Jamie = {"Jamie",100.0};
+    //struct Customer Jamie = {"Jamie",100.0};
     //printf("Customer name is %s\n",Jamie.name);
 
-    struct Product coke = {"Can Coke", 1.10};
-    struct Product bread = {"Bread",0.7};
+    //struct Product coke = {"Can Coke", 1.10};
+    //struct Product bread = {"Bread",0.7};
     
     //printf("The %s costs %.2f\n",coke.name,coke.price);
 
-    struct ProductStock cokeStock = {coke,20};
-    struct ProductStock breadStock = {bread,2};
+    //struct ProductStock cokeStock = {coke,20};
+    //struct ProductStock breadStock = {bread,2};
     //printf("The shop has %d of the product %s\n",cokeStock.quantity,cokeStock.product.name);
 
     
     
 
-    Jamie.shoppingList[Jamie.index++] = cokeStock;
-    Jamie.shoppingList[Jamie.index++] = breadStock;
+    //Jamie.shoppingList[Jamie.index++] = cokeStock;
+    //Jamie.shoppingList[Jamie.index++] = breadStock;
     //printCustomer(Jamie);
     //printProduct(coke);
     double cash = getCash();
     printf("CASH IS %.2f\n",cash);
-
-
 
 
     struct Shop shop = createAndStockShop();
