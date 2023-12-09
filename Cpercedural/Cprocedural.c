@@ -175,6 +175,40 @@ struct Customer read_customer(char CustDir[80]){
 
 }
 
+
+double findP(struct Shop s, char* name)
+{
+	for (int i = 0; i < s.index; i++)
+	{
+		if (strcmp(name, s.stock[i].product.name) == 0){
+			return s.stock[i].product.price;
+		}
+	}
+	return -1;
+}
+
+int findQ(struct Shop s, char* name)
+{
+	for (int i = 0; i < s.index; i++)
+	{
+		if (strcmp(name, s.stock[i].product.name) == 0){
+			return s.stock[i].quantity;
+		}
+	}
+	return -1;
+}
+
+int findI(struct Shop s, char* name)
+{
+	for (int i = 0; i < s.index; i++)
+	{
+		if (strcmp(name, s.stock[i].product.name) == 0){
+			return i;
+		}
+	}
+	return -1;
+}
+
 void buyingCSV(char CustDir[80]){
     //printf("Bought stuff\n");
     //printf("%s - passed customer dir",CustDir);
@@ -182,8 +216,59 @@ void buyingCSV(char CustDir[80]){
     printCustomer(c);
     struct Shop shop = createAndStockShop();
     double cash = getCash();
-    double total = 0;
+    double totalC = 0;
     int flag = 0;
+   
+	for(int i=0; i < c.index; i++){
+		struct Product p = c.shoppingList[i].product;
+		double price= findP(shop, p.name);
+        int q = findQ(shop, p.name);
+        int index = findI(shop, p.name);
+        //printf("index = %d\n",index);
+		//printf("The price of %s in the shop is %.2f\n", p.name, price);
+		double totalI = c.shoppingList[i].quantity * price;
+		//printf("You want %d of %s, that will cost you %.2f\n", c.shoppingList[i].quantity, p.name, totalI);
+        //printf("C quan %d, S quan %d\n",c.shoppingList[i].quantity,q );
+        if(q == -1 ){
+           printf("No request\n");
+        }else if (c.shoppingList[i].quantity > q)
+        {  flag = 1;}
+        else{
+
+            //printf("Stock before change = %d\n",shop.stock[index].quantity);
+            shop.stock[index].quantity = shop.stock[index].quantity - c.shoppingList[i].quantity;
+            //printf("Stock  after change = %d\n",shop.stock[index].quantity);
+            totalC += totalI;
+        }
+		
+	}
+
+    if (totalC > c.budget){flag = 2;}
+
+    if (flag == 0){
+        printf("The total cost for %s will be %.2f\n",c.name, totalC);
+        c.budget = c.budget - totalC;
+        printf("%s new balance = E%.2f\n",c.name,c.budget);
+        printf("shop cash before: %.2f\n",cash);
+        cash = cash + totalC;
+        printf("shop cash after: %.2f\n",cash);
+        //https://dev.to/arepp23/how-to-write-to-a-csv-file-in-c-1l5b
+        FILE *fpt;
+        fpt = fopen("stock.csv", "w+");
+        fprintf(fpt,"cash,%.2f\n",cash);
+        for (int i = 1;i<shop.index;i++)
+        {
+             fprintf(fpt,"%s,%.2f,%d\n",shop.stock[i].product.name,shop.stock[i].product.price,shop.stock[i].quantity);
+        };
+        fclose(fpt);
+
+    }
+    else if (flag ==1){
+        printf("sorry there is not enough stock to complete the tansaction, This order will be terminated\n");
+    } else if (flag == 2){
+         printf("%s did not have enough cash for this tansaction, This order will be terminated\n",c.name);
+    }
+	
 
 
 }
@@ -261,6 +346,102 @@ void existingCustomer(){
 
 
 
+void LiveBuy(){ 
+    char c[15];
+    char money[15];
+    char ItemBuy[20];
+    char BuyQuan[5];
+    int buyInt;
+    float cusBudget;
+    int BuyIndex=0;
+    struct Customer liveCustomer = {};
+    struct Shop shop = createAndStockShop();
+    printShop(shop);
+    double cash = getCash();
+    printf("CASH IS %.2f\n",cash);
+    
+    
+    printf("Enter your Name: \n");
+    scanf(" %s",c);
+    liveCustomer.name = c;
+    printf("Cus name: %s", liveCustomer.name);
+    printf("\nEnter your Budget: \n");
+    scanf(" %s",money);
+    double cusBudgetF = atof(money);
+    liveCustomer.budget = cusBudgetF;
+    printf("Cus budget: %.2f\n", liveCustomer.budget);
+    printf("Please enter the itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+    //https://cboard.cprogramming.com/c-programming/131665-strcmp-fails-spaces.html
+    //https://www.scaler.com/topics/fgets-function-c/
+    while(1){
+         fgets(ItemBuy, 20, stdin);
+        if(strcmp("Coke Can\n", ItemBuy) == 0){
+            printf("enter quantity: \n");
+            fgets(BuyQuan, 5, stdin);
+            liveCustomer.shoppingList[BuyIndex].product.name = "Coke Can";
+            buyInt = atoi(BuyQuan);
+            liveCustomer.shoppingList[BuyIndex].quantity = buyInt;
+            printf("%d of %s",liveCustomer.shoppingList[BuyIndex].quantity,liveCustomer.shoppingList[BuyIndex].product.name);
+            BuyIndex++;
+            printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+        }else if(strcmp("Bread\n", ItemBuy) == 0){
+            printf("enter quantity: \n");
+            fgets(BuyQuan, 5, stdin);
+            liveCustomer.shoppingList[BuyIndex].product.name = "Bread";
+            buyInt = atoi(BuyQuan);
+            liveCustomer.shoppingList[BuyIndex].quantity = buyInt;
+            BuyIndex++;
+            printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+        }else if(strcmp("Spaghetti\n", ItemBuy) == 0){
+            printf("enter quantity: \n");
+            fgets(BuyQuan, 5, stdin);
+            liveCustomer.shoppingList[BuyIndex].product.name = "Spaghetti";
+            buyInt = atoi(BuyQuan);
+            liveCustomer.shoppingList[BuyIndex].quantity = buyInt;
+            BuyIndex++;
+            printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+        }else if(strcmp("Tomato Sauce\n", ItemBuy) == 0){
+            printf("enter quantity: \n");
+            fgets(BuyQuan, 5, stdin);
+            liveCustomer.shoppingList[BuyIndex].product.name = "Tomato Sauce";
+            buyInt = atoi(BuyQuan);
+            liveCustomer.shoppingList[BuyIndex].quantity = buyInt;
+            BuyIndex++;
+            printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+        }else if(strcmp("Bin Bags\n", ItemBuy) == 0){
+            printf("enter quantity: \n");
+            fgets(BuyQuan, 5, stdin);
+            liveCustomer.shoppingList[BuyIndex].product.name = "Bin Bags";
+            buyInt = atoi(BuyQuan);
+            liveCustomer.shoppingList[BuyIndex].quantity = buyInt;
+            BuyIndex++;
+            printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
+        }else if(strcmp("y\n", ItemBuy) == 0){
+            printf("buying items");
+            printf("Cus name: %s", liveCustomer.name);
+            FILE *fpt;
+            fpt = fopen("LiveBasket.csv", "w+");
+            fprintf(fpt,"%s,%.2f\n",liveCustomer.name,liveCustomer.budget);
+            for (int i = 0;i<BuyIndex;i++)
+        {
+             fprintf(fpt,"%s,%d\n",liveCustomer.shoppingList[i].product.name,liveCustomer.shoppingList[i].quantity);
+        };
+        fclose(fpt);
+            buyingCSV("LiveBasket.csv");
+            break;
+        }else if(strcmp("x\n", ItemBuy) == 0){
+            printf("Returning to main menu");
+            break;
+        }else{
+            printf("Item not in shop list\n");
+        }
+
+
+    }
+
+
+
+    }
 
 int main(void)
 {
@@ -296,11 +477,13 @@ int main(void)
             if (c=='1') {
             existingCustomer();
             } else if (c=='2') {
-            // block of code to be executed if the condition1 is false and condition2 is true
+            LiveBuy();
             }else if (c=='3') {
-            // block of code to be executed if the condition1 is false and condition2 is true
+            struct Shop shop = createAndStockShop();
+            printShop(shop);
             }else if (c=='4') {
-            // block of code to be executed if the condition1 is false and condition2 is true
+                cash = getCash();
+                printf("CASH IS %.2f\n",cash);
             }else if (c=='x') {
             printf("Closing app"); 
                 break; // breaks loop and closes the program

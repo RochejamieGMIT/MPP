@@ -1,2 +1,2 @@
 
-	char* name;
+            printShop(shop);
