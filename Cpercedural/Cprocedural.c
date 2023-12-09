@@ -249,9 +249,9 @@ void buyingCSV(char CustDir[80]){
         printf("The total cost for %s will be %.2f\n",c.name, totalC);
         c.budget = c.budget - totalC;
         printf("%s new balance = E%.2f\n",c.name,c.budget);
-        printf("shop cash before: %.2f\n",cash);
+        //printf("shop cash before: %.2f\n",cash);
         cash = cash + totalC;
-        printf("shop cash after: %.2f\n",cash);
+        //printf("shop cash after: %.2f\n",cash);
         //https://dev.to/arepp23/how-to-write-to-a-csv-file-in-c-1l5b
         FILE *fpt;
         fpt = fopen("stock.csv", "w+");
@@ -417,8 +417,8 @@ void LiveBuy(){
             BuyIndex++;
             printf("\nPlease enter additional itmes you would like to buy, when ready to submit order enter y, or x to exit\n");
         }else if(strcmp("y\n", ItemBuy) == 0){
-            printf("buying items");
-            printf("Cus name: %s", liveCustomer.name);
+            //printf("buying items");
+            //printf("Cus name: %s", liveCustomer.name);
             FILE *fpt;
             fpt = fopen("LiveBasket.csv", "w+");
             fprintf(fpt,"%s,%.2f\n",liveCustomer.name,liveCustomer.budget);
