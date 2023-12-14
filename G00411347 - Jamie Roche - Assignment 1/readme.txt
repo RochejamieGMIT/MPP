@@ -4,6 +4,9 @@ Procedural Python, Procedural C, and OOP python.
 The shop has items, and a cash balance.
 All the programs share the stock.csv file. 
 
+********************************
+Test Cases Explained
+********************************
 There is test cases for purchases for the programs. 
 Clodagh, Dom, Jamie, Mike are all regular files that can be read and processed. 
 The file kali.csv does not have enough money to pay for the times in their shopping basket. 
